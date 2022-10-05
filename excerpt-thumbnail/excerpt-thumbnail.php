@@ -1,27 +1,27 @@
 <?php
 
 /**
- * The plugin bootstrap file
+ * Excerpt Thumbnail bootstrap file
  *
  * This file is read by WordPress to generate the plugin information in the plugin
  * admin area. This file also includes all of the dependencies used by the plugin,
  * registers the activation and deactivation functions, and defines a function
  * that starts the plugin.
  *
- * @link              http://example.com
+ * @link              http://wellplanet.com
  * @since             1.0.0
- * @package           Plugin_Name
+ * @package           Excerpt_Thumbnail
  *
  * @wordpress-plugin
- * Plugin Name:       WordPress Plugin Boilerplate
- * Plugin URI:        http://example.com/plugin-name-uri/
- * Description:       This is a short description of what the plugin does. It's displayed in the WordPress admin area.
+ * Plugin Name:       Excerpt Thumbnail
+ * Plugin URI:        http://wellplanet.com
+ * Description:       Excerpt Thumbnail generates thumbnails wherever you show excerpts (archive page, feed...).
  * Version:           1.0.0
- * Author:            Your Name or Your Company
- * Author URI:        http://example.com/
+ * Author:            Patrick Coleman
+ * Author URI:        http://wellplanet.com
  * License:           GPL-2.0+
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
- * Text Domain:       plugin-name
+ * Text Domain:       excerpt-thumbnail
  * Domain Path:       /languages
  */
 
@@ -31,41 +31,41 @@ if ( ! defined( 'WPINC' ) ) {
 }
 
 /**
- * Currently plugin version.
- * Start at version 1.0.0 and use SemVer - https://semver.org
- * Rename this for your plugin and update it as you release new versions.
+ * Current plugin version.
+ * Started at version 1.0.0 and uses SemVer - https://semver.org
+ * This will be updated as new versions are released.
  */
-define( 'PLUGIN_NAME_VERSION', '1.0.0' );
+define( 'EXCERPT_THUMBNAIL_VERSION', '1.0.0' );
 
 /**
  * The code that runs during plugin activation.
- * This action is documented in includes/class-plugin-name-activator.php
+ * This action is documented in includes/class-excerpt-thumbnail-activator.php
  */
-function activate_plugin_name() {
-	require_once plugin_dir_path( __FILE__ ) . 'includes/class-plugin-name-activator.php';
-	Plugin_Name_Activator::activate();
+function activate_excerpt_thumbnail() {
+	require_once plugin_dir_path( __FILE__ ) . 'includes/class-excerpt-thumbnail-activator.php';
+	Excerpt_Thumbnail_Activator::activate();
 }
 
 /**
  * The code that runs during plugin deactivation.
- * This action is documented in includes/class-plugin-name-deactivator.php
+ * This action is documented in includes/class-excerpt-thumbnail-deactivator.php
  */
-function deactivate_plugin_name() {
-	require_once plugin_dir_path( __FILE__ ) . 'includes/class-plugin-name-deactivator.php';
-	Plugin_Name_Deactivator::deactivate();
+function deactivate_excerpt_thumbnail() {
+	require_once plugin_dir_path( __FILE__ ) . 'includes/class-excerpt-thumbnail-deactivator.php';
+	Excerpt_Thumbnail_Deactivator::deactivate();
 }
 
-register_activation_hook( __FILE__, 'activate_plugin_name' );
-register_deactivation_hook( __FILE__, 'deactivate_plugin_name' );
+register_activation_hook( __FILE__, 'activate_excerpt_thumbnail' );
+register_deactivation_hook( __FILE__, 'deactivate_excerpt_thumbnail' );
 
 /**
  * The core plugin class that is used to define internationalization,
  * admin-specific hooks, and public-facing site hooks.
  */
-require plugin_dir_path( __FILE__ ) . 'includes/class-plugin-name.php';
+require plugin_dir_path( __FILE__ ) . 'includes/class-excerpt-thumbnail.php';
 
 /**
- * Begins execution of the plugin.
+ * Begin execution of the plugin.
  *
  * Since everything within the plugin is registered via hooks,
  * then kicking off the plugin from this point in the file does
@@ -73,10 +73,10 @@ require plugin_dir_path( __FILE__ ) . 'includes/class-plugin-name.php';
  *
  * @since    1.0.0
  */
-function run_plugin_name() {
+function run_excerpt_thumbnail() {
 
-	$plugin = new Plugin_Name();
+	$plugin = new Excerpt_Thumbnail();
 	$plugin->run();
 
 }
-run_plugin_name();
+run_excerpt_thumbnail();
