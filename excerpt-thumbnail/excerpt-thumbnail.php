@@ -10,6 +10,15 @@
  * Requires at least: 5.8
  * Requires PHP: 7.4
  */
+/**
+ * Main plugin bootstrap.
+ *
+ * @link       https://wellplanet.com
+ * @since      3.0.0
+ * @package    Excerpt_Thumbnail
+ * @author     Patrick Coleman <pat@wellplanet.com>
+ * @license    GPL-2.0-or-later
+ */
 
 if ( ! defined( 'WPINC' ) ) {
     die;
