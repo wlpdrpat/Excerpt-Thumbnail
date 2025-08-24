@@ -1,25 +1,51 @@
 <?php
 /**
- * Core plugin class
+ * Core plugin class.
+ *
+ * @link       https://wellplanet.com
+ * @since      3.0.0
+ * @package    Excerpt_Thumbnail
+ * @subpackage Excerpt_Thumbnail/includes
+ * @author     Patrick Coleman <pat@wellplanet.com>
+ * @license    GPL-2.0-or-later
  */
 
+/**
+ * Wires dependencies and registers admin/public hooks.
+ *
+ * @since 3.0.0
+ */
 class Excerpt_Thumbnail {
 
     /**
+     * Hook loader.
+     *
+     * @since 3.0.0
      * @var Excerpt_Thumbnail_Loader
      */
     protected $loader;
 
     /**
+     * Plugin slug (text domain).
+     *
+     * @since 3.0.0
      * @var string
      */
     protected $plugin_slug = EXCERPT_THUMBNAIL_SLUG;
 
     /**
+     * Plugin version.
+     *
+     * @since 3.0.0
      * @var string
      */
     protected $version = EXCERPT_THUMBNAIL_VERSION;
 
+    /**
+     * Bootstraps dependencies and hooks.
+     *
+     * @since 3.0.0
+     */
     public function __construct() {
         $this->load_dependencies();
         $this->set_locale();
@@ -27,49 +53,70 @@ class Excerpt_Thumbnail {
         $this->define_public_hooks();
     }
 
+    /**
+     * Require class files and prepare the loader.
+     *
+     * @since 3.0.0
+     * @return void
+     */
     private function load_dependencies() {
         require_once EXCERPT_THUMBNAIL_DIR . 'includes/class-excerpt-thumbnail-loader.php';
         require_once EXCERPT_THUMBNAIL_DIR . 'includes/class-excerpt-thumbnail-i18n.php';
-
-        // Admin and Public classes (empty stubs for now; we’ll add logic later)
         require_once EXCERPT_THUMBNAIL_DIR . 'admin/class-excerpt-thumbnail-admin.php';
         require_once EXCERPT_THUMBNAIL_DIR . 'public/class-excerpt-thumbnail-public.php';
 
         $this->loader = new Excerpt_Thumbnail_Loader();
     }
 
+    /**
+     * Load translations.
+     *
+     * @since 3.0.0
+     * @return void
+     */
     private function set_locale() {
         $plugin_i18n = new Excerpt_Thumbnail_i18n();
         $plugin_i18n->set_domain( $this->plugin_slug );
-
         $this->loader->add_action( 'plugins_loaded', $plugin_i18n, 'load_plugin_textdomain' );
     }
 
+    /**
+     * Register admin area hooks.
+     *
+     * @since 3.0.0
+     * @return void
+     */
     private function define_admin_hooks() {
         $plugin_admin = new Excerpt_Thumbnail_Admin( $this->plugin_slug, $this->version );
-
-        // Keep these in place; we’ll wire real settings in Step 2
         $this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
         $this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
     }
 
+    /**
+     * Register public-facing hooks.
+     *
+     * @since 3.0.0
+     * @return void
+     */
     private function define_public_hooks() {
         $plugin_public = new Excerpt_Thumbnail_Public( $this->plugin_slug, $this->version );
-
-        // No front-end behavior yet — parity comes later
         $this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
         $this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
     }
 
+    /**
+     * Attach all collected hooks to WordPress.
+     *
+     * @since 3.0.0
+     * @return void
+     */
     public function run() {
         $this->loader->run();
     }
 
-    public function get_plugin_slug() {
-        return $this->plugin_slug;
-    }
+    /** @since 3.0.0 */
+    public function get_plugin_slug() { return $this->plugin_slug; }
 
-    public function get_version() {
-        return $this->version;
-    }
+    /** @since 3.0.0 */
+    public function get_version() { return $this->version; }
 }
