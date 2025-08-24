@@ -21,16 +21,7 @@
  * @author     Patrick Coleman <pat@wellplanet.com>
  */
 class Excerpt_Thumbnail_Activator {
-
-	/**
-	 * Short Description. (use period)
-	 *
-	 * Long Description.
-	 *
-	 * @since    1.0.0
-	 */
-	public static function activate() {
-
-	}
-
+    public static function activate() {
+        // Nothing yet.
+    }
 }
