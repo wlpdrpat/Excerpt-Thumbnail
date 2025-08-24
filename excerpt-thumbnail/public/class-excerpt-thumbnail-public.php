@@ -1,33 +1,43 @@
 <?php
 /**
- * The public-facing functionality of the plugin.
+ * Public-facing functionality.
  *
- * @link       http://wellplanet.com
- * @since      1.0.0
- *
- * @package    Excerpt_Thumbnail
- * @subpackage Excerpt_Thumbnail/public
- */
-
-/**
- * The public-facing functionality of the plugin.
- *
- * Defines the plugin name, version, and two examples hooks for how to
- * enqueue the public-facing stylesheet and JavaScript.
- *
+ * @link       https://wellplanet.com
+ * @since      3.0.0
  * @package    Excerpt_Thumbnail
  * @subpackage Excerpt_Thumbnail/public
  * @author     Patrick Coleman <pat@wellplanet.com>
+ * @license    GPL-2.0-or-later
+ */
+
+/**
+ * Enqueues public assets and (later) modifies excerpt markup.
+ *
+ * @since 3.0.0
  */
 class Excerpt_Thumbnail_Public {
+
+    /** @since 3.0.0 @var string */
     private $slug;
+
+    /** @since 3.0.0 @var string */
     private $version;
 
+    /**
+     * Ctor.
+     *
+     * @since 3.0.0
+     * @param string $slug     Plugin slug.
+     * @param string $version  Plugin version.
+     */
     public function __construct( $slug, $version ) {
         $this->slug    = $slug;
         $this->version = $version;
     }
 
+    /** @since 3.0.0 @return void */
     public function enqueue_styles() {}
+
+    /** @since 3.0.0 @return void */
     public function enqueue_scripts() {}
 }
