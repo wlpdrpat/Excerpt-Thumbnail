@@ -13,20 +13,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.2'
-          tools: composer
+      - name: Show PHP & Composer
+        run: |
+          php -v || true
+          composer --version || true
 
-      - name: Cache Composer (global)
-        uses: actions/cache@v4
-        with:
-          path: ~/.composer/cache
-          key: composer-${{ runner.os }}-${{ hashFiles('**/composer.lock') }}
-          restore-keys: composer-${{ runner.os }}-
+      - name: Install Composer (if missing)
+        run: |
+          if ! command -v composer >/dev/null 2>&1; then
+            php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+            php composer-setup.php --install-dir=/usr/local/bin --filename=composer
+          fi
+          composer --version
 
-      # Install PHPCS + standards globally
       - name: Install PHPCS tooling (global)
         run: |
           composer global config --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
@@ -36,19 +35,6 @@ jobs:
             phpcompatibility/php-compatibility:^9.3 \
             phpcompatibility/phpcompatibility-wp:^2.1
 
-      # --- Debug so we can see what's installed and where ---
-      - name: Debug env
-        run: |
-          php -v
-          composer --version
-          echo "PWD=$(pwd)"
-          ls -la
-          echo "----- phpcs.xml.dist -----"
-          cat phpcs.xml.dist || true
-
-      - name: Show PHPCS version
-        run: ~/.composer/vendor/bin/phpcs --version
-
       - name: Configure PHPCS installed_paths (global)
         run: |
           GROOT="$HOME/.composer/vendor"
@@ -56,7 +42,5 @@ jobs:
           ~/.composer/vendor/bin/phpcs -i
           ~/.composer/vendor/bin/phpcs --config-show
 
-      # Use an absolute path to the ruleset to avoid "file not found"
-      - name: Run PHPCS (ruleset file)
-        run: |
-          ~/.composer/vendor/bin/phpcs --standard="$(pwd)/phpcs.xml.dist" -s
+      - name: Run PHPCS
+        run: ~/.composer/vendor/bin/phpcs --standard="$(pwd)/phpcs.xml.dist" -s
