@@ -88,8 +88,14 @@ class Excerpt_Thumbnail {
      */
     private function define_admin_hooks() {
         $plugin_admin = new Excerpt_Thumbnail_Admin( $this->plugin_slug, $this->version );
-        $this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
-        $this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
+
+    // Enqueues (empty for now)
+    $this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
+    $this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
+
+    // NEW: settings page + settings registration
+    $this->loader->add_action( 'admin_menu',  $plugin_admin, 'add_options_page' );
+    $this->loader->add_action( 'admin_init',  $plugin_admin, 'register_settings' );
     }
 
     /**
