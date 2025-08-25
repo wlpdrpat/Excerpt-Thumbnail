@@ -96,6 +96,15 @@ excerpt-thumbnail/
 
 ---
 
+## Project history
+
+- Legacy inspiration: **Thumbnail For Excerpts** by **@radukn** on WordPress.org — https://wordpress.org/plugins/thumbnail-for-excerpts/
+- That plugin was **closed on June 16, 2022** and is not available for download (Guideline Violation per WordPress.org).
+- Since **2016**, Patrick Coleman has independently developed and maintained a version based on that plugin.
+- This repository (3.x) is a **clean redevelopment** using the WordPress Plugin Boilerplate, preserving expected legacy behavior while modernizing structure and security.
+
+---
+
 ## Coding standards
 
 All new code is documented with file headers and method docblocks. We aim to follow WordPress Coding Standards (WPCS). Local linting (optional):
