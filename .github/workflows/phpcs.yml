@@ -1,40 +1,42 @@
 name: PHPCS
+
 on:
   push:
     branches: [ master ]
   pull_request:
     branches: [ master ]
+
 jobs:
   phpcs:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
           tools: composer
+
       - name: Cache Composer
         uses: actions/cache@v4
         with:
           path: ~/.composer/cache
           key: composer-${{ runner.os }}-${{ hashFiles('**/composer.lock') }}
           restore-keys: composer-${{ runner.os }}-
+
       - name: Install dependencies
         run: composer install --no-interaction --prefer-dist
-           - name: Show PHPCS version
+
+      - name: Show PHPCS version
         run: vendor/bin/phpcs --version
 
       - name: Configure PHPCS installed_paths
         run: |
-          vendor/bin/phpcs --config-set installed_paths \
-            vendor/wp-coding-standards/wpcs, \
-            vendor/phpcompatibility/php-compatibility, \
-            vendor/phpcompatibility/phpcompatibility-wp
+          vendor/bin/phpcs --config-set installed_paths vendor/wp-coding-standards/wpcs,vendor/phpcompatibility/php-compatibility,vendor/phpcompatibility/phpcompatibility-wp
           vendor/bin/phpcs -i
           vendor/bin/phpcs --config-show
 
       - name: Run PHPCS
         run: vendor/bin/phpcs --standard=phpcs.xml.dist
-
