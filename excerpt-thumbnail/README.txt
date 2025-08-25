@@ -16,6 +16,12 @@ Safely adds a thumbnail to post excerpts on home, archive, and search views. Reb
 - Optional: Add `<meta property="og:image">` on single posts.
 - **Modern Mode**: only modifies `the_excerpt` and uses a named image size.
 
+== Project History ==
+- Legacy inspiration: Thumbnail For Excerpts by @radukn — https://wordpress.org/plugins/thumbnail-for-excerpts/
+- That plugin was closed on June 16, 2022 and is not available for download (Guideline Violation per WordPress.org).
+- Since 2016, Patrick Coleman has independently developed and maintained a version based on that plugin.
+- This plugin (3.x) is a redevelopment using the WordPress Plugin Boilerplate; legacy behavior is preserved by default.
+
 == Installation ==
 1. Upload the plugin folder to `/wp-content/plugins/`.
 2. Activate **Excerpt Thumbnail**.
