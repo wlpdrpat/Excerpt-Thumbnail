@@ -1,71 +1,86 @@
 # Excerpt Thumbnail
 
-Excerpt Thumbnail generates thumbnails wherever you show excerpts (archive page, feed...).
+Safely adds a thumbnail to post excerpts on home, archive, and search views—rebuilt on the WordPress Plugin Boilerplate with modern security and opt-in “Modern Mode.”
 
-## Contents
+- **Image priority:** Featured Image → first image in content → default image URL  
+- **Contexts:** Home / Archives / Search (toggle each)  
+- **Optional:** Add `<meta property="og:image">` on single posts  
+- **Modern Mode (opt-in):** uses `the_excerpt` only (no content forcing) and a named image size `excerpt-thumbnail`
 
-Excerpt Thumbnail includes the following files:
+<br>
 
-* `.gitignore`. Used to exclude certain files from the repository.
-* `CHANGELOG.md`. The list of changes to the core project.
-* `README.md`. The file that you’re currently reading.
-* A `excerpt-thumbnail` directory that contains the source code - a fully executable WordPress plugin.
+## Requirements
 
-## Features
+- WordPress **5.8+**
+- PHP **7.4 – 8.3**  
+- A theme that displays excerpts on archive contexts (or keep Legacy mode enabled to force excerpts)
 
-* Excerpt Thumbnail is based on the [Plugin API](http://codex.wordpress.org/Plugin_API), [Coding Standards](http://codex.wordpress.org/WordPress_Coding_Standards), and [Documentation Standards](https://make.wordpress.org/core/handbook/best-practices/inline-documentation-standards/php/).
-* All classes, functions, and variables are well documented.
-* Excerpt Thumbnail uses a strict file organization scheme from The Boilerplate that corresponds both to the WordPress Plugin Repository structure, and that makes it easy to organize the files.
-* The project includes a `.pot` file as a starting point for internationalization.
+<br>
 
 ## Installation
 
-Excerpt Thumbnail can be installed directly into your plugins folder.
+1. Upload the plugin folder to `/wp-content/plugins/excerpt-thumbnail/` or install the ZIP via **Plugins → Add New**.
+2. Activate **Excerpt Thumbnail**.
+3. Go to **Settings → Excerpt Thumbnail** and configure.
 
-### i18n Tools
+> For WordPress.org users: general plugin info and changelog live in `readme.txt`.
 
-Excerpt Thumbnail uses a variable to store the text domain used when internationalizing strings throughout Excerpt Thumbnail. To take advantage of this method, there are tools that are recommended for providing correct, translatable files:
+<br>
 
-* [Poedit](http://www.poedit.net/)
-* [makepot](http://i18n.svn.wordpress.org/tools/trunk/)
-* [i18n](https://github.com/grappler/i18n)
+## Settings Overview
 
-Any of the above tools should provide you with the proper tooling to internationalize the plugin.
+**Image sizing & layout**
+- **Image Width (px)**: `tfe_width` — default **150**
+- **Image Height (px)**: `tfe_height` — default **150**
+- **Alignment**: `tfe_align` — **left | right | center**
+- **Link Image to Post**: `tfe_withlink` — **yes/no** (default **yes**)
 
-## License
+**Image source fallback**
+- **Use Default Image**: `tfe_default_image` — **yes/no** (default **no**)
+- **Default Image URL**: `tfe_default_image_src`
 
-Excerpt Thumbnail is licensed under the GPL v2 or later.
+**Where to show**
+- **Home / Blog Index**: `tfe_on_home` — **yes/no** (default **yes**)
+- **Archives**: `tfe_on_archives` — **yes/no** (default **yes**)
+- **Search Results**: `tfe_on_search` — **yes/no** (default **yes**)
+- **Exclude Categories (CSV of IDs)**: `tfe_exclusion` — e.g., `2,7,15`  
+  _(Legacy behavior: exclusions are enforced on **category archives**.)_
 
-> This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License, version 2, as published by the Free Software Foundation.
+**SEO / Social**
+- **Add Open Graph Image**: `tfe_add_og_image` — **yes/no** (default **yes**)  
+  Outputs a single `<meta property="og:image" ...>` on **single posts** using the same image-selection logic. Disable if your SEO plugin already sets og:image.
 
-> This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+**Mode**
+- **Modern Mode (recommended)**: `tfe_modern_mode` — **yes/no** (default **no**)  
+  - Only modifies `the_excerpt` (no forcing `the_content`)  
+  - Registers image size `excerpt-thumbnail` and uses it for featured images
 
-> You should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+**Uninstall**
+- **Remove Data on Uninstall**: `tfe_cleanup_on_uninstall` — **yes/no** (default **no**)  
+  If enabled, plugin options are deleted when the plugin is removed.
 
-A copy of the license is included in the root of the plugin’s directory. The file is named `LICENSE`.
+<br>
 
-## Important Notes
+## Behavior Details
 
-### Licensing
+- On **site views** (not feeds), the plugin prepends the chosen image to the excerpt for the enabled contexts.
+- In **Legacy mode** (default), home/archive/search views show a **forced 55-word excerpt** with a translatable “Read More >>” link—matching the old plugin’s behavior.
+- In **feeds**, alignment is converted to legacy feed-friendly attributes (`align="left|right"` or a centered `<p>` wrapper).
+- Accessibility: alt text falls back to the post title when we reconstruct an `<img>` tag from content.
 
-Excerpt Thumbnail is licensed under the GPL v2 or later; however, if you opt to use third-party code that is not compatible with v2, then you may need to switch to using code that is GPL v3 compatible.
+<br>
 
-For reference, [here's a discussion](http://make.wordpress.org/themes/2013/03/04/licensing-note-apache-and-gpl/) that covers the Apache 2.0 License used by [Bootstrap](http://twitter.github.io/bootstrap/).
+## Troubleshooting
 
-### Includes
+- **No image appears:**  
+  - Ensure the context toggle is enabled (e.g., Archives), and that the post has a Featured Image, a content image, or a Default Image is configured (and allowed).
+- **Duplicate `og:image`:**  
+  - Uncheck **Add Open Graph Image** here if your SEO plugin already outputs it.
+- **Modern Mode shows different sizes:**  
+  - Modern Mode uses the named size `excerpt-thumbnail`. If you change width/height, run a thumbnail regeneration plugin so existing attachments get the new size.
 
-Note that if you include your own classes, or third-party libraries, there are three locations in which said files may go:
+<br>
 
-* `excerpt-thumbnail/includes` is where functionality shared between the admin area and the public-facing parts of the site reside
-* `excerpt-thumbnail/admin` is for all admin-specific functionality
-* `excerpt-thumbnail/public` is for all public-facing functionality
+## Development
 
-Note that previous versions of Excerpt Thumbnail did not include `Plugin_Name_Loader` but this class is used to register all filters and actions with WordPress.
-
-# Credits
-
-TBA
-
-## Documentation, FAQs, and More
-
-TBA.
+### Repo structure
