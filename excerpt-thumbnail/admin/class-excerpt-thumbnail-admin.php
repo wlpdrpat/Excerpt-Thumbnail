@@ -126,6 +126,8 @@ class Excerpt_Thumbnail_Admin {
         register_setting( $this->settings_group, 'tfe_on_archives',         [ $this, 'sanitize_yesno' ] );
         register_setting( $this->settings_group, 'tfe_on_search',           [ $this, 'sanitize_yesno' ] );
         register_setting( $this->settings_group, 'tfe_exclusion',           [ $this, 'sanitize_csv_ids' ] );
+        register_setting( $this->settings_group, 'tfe_add_og_image',        [ $this, 'sanitize_yesno' ] );
+
         // If we later expose a custom "Read More" label, we’ll register it here.
         // register_setting( $this->settings_group, 'tfe_read_more_text',    [ $this, 'sanitize_text' ] );
 
@@ -200,6 +202,14 @@ class Excerpt_Thumbnail_Admin {
             'tfe_exclusion',
             __( 'Exclude Categories (CSV of IDs)', 'excerpt-thumbnail' ),
             [ $this, 'field_exclusion' ],
+            $this->page_slug,
+            'excerpt_thumbnail_main'
+        );
+
+        add_settings_field(
+            'tfe_add_og_image',
+            __( 'Add Open Graph Image', 'excerpt-thumbnail' ),
+            [ $this, 'field_add_og_image' ],
             $this->page_slug,
             'excerpt_thumbnail_main'
         );
@@ -383,6 +393,22 @@ class Excerpt_Thumbnail_Admin {
         );
         echo '<p class="description">' . esc_html__( 'Enter category IDs to exclude (comma-separated).', 'excerpt-thumbnail' ) . '</p>';
     }
+
+    /**
+     * Add og:image meta tag on single post pages (checkbox).
+     *
+     * @since 3.0.0
+     * @return void
+     */
+    public function field_add_og_image() {
+        $value = get_option( 'tfe_add_og_image', 'yes' ); // default: enabled
+        printf(
+            '<label><input type="checkbox" name="tfe_add_og_image" value="yes"%s> %s</label>',
+            checked( $value, 'yes', false ),
+            esc_html__( 'Output <meta property="og:image"> on single posts using the same image logic (Featured → first content image → default).', 'excerpt-thumbnail' )
+        );
+        echo '<p class="description">' . esc_html__( 'Uncheck if your SEO plugin already sets og:image to avoid duplicates.', 'excerpt-thumbnail' ) . '</p>';
+}
 
     // ===== Sanitizers ========================================================
 
