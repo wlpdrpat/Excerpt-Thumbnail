@@ -13,8 +13,5 @@
   "scripts": {
     "lint": "phpcs",
     "lint:fix": "phpcbf"
-  },
-  "config": {
-    "sort-packages": true
   }
 }
