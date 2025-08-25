@@ -122,6 +122,10 @@ class Excerpt_Thumbnail {
     // Add <meta property="og:image" ...> on single posts when enabled.
     $this->loader->add_action( 'wp_head', $plugin_public, 'maybe_add_og_image', 5 );
 
+    // Register 'excerpt-thumbnail' size based on current settings.
+    $this->loader->add_action( 'after_setup_theme', $plugin_public, 'register_image_size' );
+
+
 }
 
     /**
