@@ -23,5 +23,18 @@ jobs:
           restore-keys: composer-${{ runner.os }}-
       - name: Install dependencies
         run: composer install --no-interaction --prefer-dist
+           - name: Show PHPCS version
+        run: vendor/bin/phpcs --version
+
+      - name: Configure PHPCS installed_paths
+        run: |
+          vendor/bin/phpcs --config-set installed_paths \
+            vendor/wp-coding-standards/wpcs, \
+            vendor/phpcompatibility/php-compatibility, \
+            vendor/phpcompatibility/phpcompatibility-wp
+          vendor/bin/phpcs -i
+          vendor/bin/phpcs --config-show
+
       - name: Run PHPCS
         run: vendor/bin/phpcs --standard=phpcs.xml.dist
+
