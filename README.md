@@ -94,6 +94,8 @@ excerpt-thumbnail/
 ├─ readme.txt     (WordPress.org)
 └─ README.md      (this file)
 
+---
+
 ## Coding standards
 
 All new code is documented with file headers and method docblocks. We aim to follow WordPress Coding Standards (WPCS). Local linting (optional):
@@ -104,6 +106,8 @@ composer run lint:fix
 
 CI for PHPCS is optional and can be set up later.
 
+---
+
 ## Build a release ZIP
 
 1. Ensure version in excerpt-thumbnail.php is correct.
@@ -112,10 +116,14 @@ CI for PHPCS is optional and can be set up later.
 
 3. Zip the plugin folder and upload via Plugins → Add New.
 
+---
+
 ## Compatibility
 
 - Tested with WordPress 6.6
 - Works with classic themes and most block themes that render excerpts on archive templates
+
+---
 
 ## Roadmap (nice-to-haves)
 
@@ -124,12 +132,16 @@ CI for PHPCS is optional and can be set up later.
 - Consolidate options into a single settings array (with backward compatibility)
 - Add screenshots and a demo archive template snippet
 
+---
+
 ## Contributing
 
 Issues and PRs are welcome. Please:
 - Keep PRs focused and small (single feature/fix).
 - Follow WordPress coding standards where practical.
 - Include before/after notes or screenshots for UI changes.
+
+---
 
 ## License
 
