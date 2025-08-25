@@ -1,19 +1,7 @@
 <?xml version="1.0"?>
-<ruleset name="Excerpt Thumbnail Standards">
-  <file>.</file>
-  <exclude-pattern>*/vendor/*</exclude-pattern>
-  <exclude-pattern>*/node_modules/*</exclude-pattern>
-  <exclude-pattern>*/.github/*</exclude-pattern>
-  <exclude-pattern>*/languages/*</exclude-pattern>
-
-  <config name="installed_paths" value="vendor/wp-coding-standards/wpcs, vendor/phpcompatibility/php-compatibility, vendor/phpcompatibility/phpcompatibility-wp"/>
-  <config name="testVersion" value="7.4-8.3"/>
-
-  <rule ref="WordPress-Core"/>
-  <rule ref="WordPress-Docs"/>
-  <rule ref="WordPress-Extra"/>
-  <rule ref="PHPCompatibilityWP"/>
-
-  <arg value="sp"/>
-  <arg name="basepath" value="."/>
+<ruleset name="Minimal">
+  <file>./</file>
+  <exclude-pattern>vendor/*</exclude-pattern>
+  <exclude-pattern>.github/*</exclude-pattern>
+  <rule ref="PSR12"/>
 </ruleset>
