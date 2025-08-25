@@ -105,10 +105,20 @@ class Excerpt_Thumbnail {
      * @return void
      */
     private function define_public_hooks() {
-        $plugin_public = new Excerpt_Thumbnail_Public( $this->plugin_slug, $this->version );
-        $this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
-        $this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
-    }
+    $plugin_public = new Excerpt_Thumbnail_Public( $this->plugin_slug, $this->version );
+
+    // Enqueues (unused for now).
+    $this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
+    $this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
+
+    // === LEGACY-PARITY FILTERS ===
+    // Add thumbnail to excerpts (site + RSS).
+    $this->loader->add_action( 'the_excerpt',      $plugin_public, 'filter_the_excerpt', 10, 1 );
+    $this->loader->add_action( 'the_excerpt_rss',  $plugin_public, 'filter_the_excerpt', 10, 1 );
+
+    // Force content → excerpt on home/archive/search (legacy behavior).
+    $this->loader->add_action( 'the_content',      $plugin_public, 'filter_the_content', 10, 1 );
+}
 
     /**
      * Attach all collected hooks to WordPress.
