@@ -128,6 +128,7 @@ class Excerpt_Thumbnail_Admin {
         register_setting( $this->settings_group, 'tfe_exclusion',           [ $this, 'sanitize_csv_ids' ] );
         register_setting( $this->settings_group, 'tfe_add_og_image',        [ $this, 'sanitize_yesno' ] );
         register_setting( $this->settings_group, 'tfe_modern_mode',         [ $this, 'sanitize_yesno' ] );
+        register_setting( $this->settings_group, 'tfe_cleanup_on_uninstall', [ $this, 'sanitize_yesno' ] );
 
 
         // If we later expose a custom "Read More" label, we’ll register it here.
@@ -220,6 +221,14 @@ class Excerpt_Thumbnail_Admin {
             'tfe_modern_mode',
             __( 'Modern Mode (recommended)', 'excerpt-thumbnail' ),
             [ $this, 'field_modern_mode' ],
+            $this->page_slug,
+            'excerpt_thumbnail_main'
+        );
+
+        add_settings_field(
+            'tfe_cleanup_on_uninstall',
+            __( 'Remove Data on Uninstall', 'excerpt-thumbnail' ),
+            [ $this, 'field_cleanup_on_uninstall' ],
             $this->page_slug,
             'excerpt_thumbnail_main'
         );
@@ -442,6 +451,21 @@ class Excerpt_Thumbnail_Admin {
         echo '<p class="description">' . esc_html__( 'Tip: After changing width/height, run a thumbnail regeneration plugin if you want new physical sizes for existing images.', 'excerpt-thumbnail' ) . '</p>';
     }
 
+    /**
+     * Remove settings/data on uninstall (checkbox).
+     *
+     * @since 3.0.0
+     * @return void
+     */
+    public function field_cleanup_on_uninstall() {
+        $value = get_option( 'tfe_cleanup_on_uninstall', 'no' ); // default: keep data
+        printf(
+            '<label><input type="checkbox" name="tfe_cleanup_on_uninstall" value="yes"%s> %s</label>',
+            checked( $value, 'yes', false ),
+            esc_html__( 'When the plugin is deleted, remove all Excerpt Thumbnail settings.', 'excerpt-thumbnail' )
+        );
+        echo '<p class="description">' . esc_html__( 'Recommended on staging/dev. Leave unchecked in production if you may reinstall later.', 'excerpt-thumbnail' ) . '</p>';
+    }
 
     // ===== Sanitizers ========================================================
 
