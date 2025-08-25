@@ -9,16 +9,11 @@ on:
 jobs:
   phpcs:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
 
-      - name: Show PHP & Composer
-        run: |
-          php -v || true
-          composer --version || true
-
-      - name: Install Composer (if missing)
+      # We won't rely on external actions beyond GitHub-owned
+      - name: Ensure Composer is available
         run: |
           if ! command -v composer >/dev/null 2>&1; then
             php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
@@ -26,6 +21,7 @@ jobs:
           fi
           composer --version
 
+      # Install PHPCS + standards globally to avoid vendor path issues
       - name: Install PHPCS tooling (global)
         run: |
           composer global config --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
@@ -35,6 +31,18 @@ jobs:
             phpcompatibility/php-compatibility:^9.3 \
             phpcompatibility/phpcompatibility-wp:^2.1
 
+      # Show environment + your ruleset
+      - name: Debug env
+        run: |
+          php -v || true
+          echo "PWD=$(pwd)"
+          ls -la
+          echo "----- phpcs.xml.dist (if present) -----"
+          test -f phpcs.xml.dist && cat phpcs.xml.dist || echo "NO phpcs.xml.dist found at repo root"
+
+      - name: Show PHPCS version
+        run: ~/.composer/vendor/bin/phpcs --version
+
       - name: Configure PHPCS installed_paths (global)
         run: |
           GROOT="$HOME/.composer/vendor"
@@ -42,5 +50,10 @@ jobs:
           ~/.composer/vendor/bin/phpcs -i
           ~/.composer/vendor/bin/phpcs --config-show
 
-      - name: Run PHPCS
-        run: ~/.composer/vendor/bin/phpcs --standard="$(pwd)/phpcs.xml.dist" -s
+      # Sanity: prove PHPCS actually runs (don’t fail the job here)
+      - name: Sanity run (PSR12 on plugin dirs)
+        run: ~/.composer/vendor/bin/phpcs --standard=PSR12 -s admin includes public || true
+
+      # Final: run with your ruleset using an absolute path and explicit targets
+      - name: Run PHPCS with repo ruleset
+        run: ~/.composer/vendor/bin/phpcs --standard="$(pwd)/phpcs.xml.dist" -s admin includes public
