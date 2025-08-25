@@ -12,8 +12,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # We won't rely on external actions beyond GitHub-owned
-      - name: Ensure Composer is available
+      # Ensure Composer is available on the runner
+      - name: Ensure Composer
         run: |
           if ! command -v composer >/dev/null 2>&1; then
             php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
@@ -21,7 +21,7 @@ jobs:
           fi
           composer --version
 
-      # Install PHPCS + standards globally to avoid vendor path issues
+      # Install PHPCS + standards globally (avoids vendor path issues)
       - name: Install PHPCS tooling (global)
         run: |
           composer global config --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
@@ -31,29 +31,36 @@ jobs:
             phpcompatibility/php-compatibility:^9.3 \
             phpcompatibility/phpcompatibility-wp:^2.1
 
-      # Show environment + your ruleset
-      - name: Debug env
-        run: |
-          php -v || true
-          echo "PWD=$(pwd)"
-          ls -la
-          echo "----- phpcs.xml.dist (if present) -----"
-          test -f phpcs.xml.dist && cat phpcs.xml.dist || echo "NO phpcs.xml.dist found at repo root"
-
-      - name: Show PHPCS version
-        run: ~/.composer/vendor/bin/phpcs --version
-
-      - name: Configure PHPCS installed_paths (global)
+      - name: Configure PHPCS installed_paths & show standards
         run: |
           GROOT="$HOME/.composer/vendor"
-          ~/.composer/vendor/bin/phpcs --config-set installed_paths "$GROOT/wp-coding-standards/wpcs,$GROOT/phpcompatibility/php-compatibility,$GROOT/phpcompatibility/phpcompatibility-wp"
-          ~/.composer/vendor/bin/phpcs -i
-          ~/.composer/vendor/bin/phpcs --config-show
+          "~/.composer/vendor/bin/phpcs" --config-set installed_paths "$GROOT/wp-coding-standards/wpcs,$GROOT/phpcompatibility/php-compatibility,$GROOT/phpcompatibility/phpcompatibility-wp"
+          "~/.composer/vendor/bin/phpcs" -i
+          "~/.composer/vendor/bin/phpcs" --config-show
 
-      # Sanity: prove PHPCS actually runs (don’t fail the job here)
-      - name: Sanity run (PSR12 on plugin dirs)
-        run: ~/.composer/vendor/bin/phpcs --standard=PSR12 -s admin includes public || true
+      # Build a target list of only dirs that actually exist (avoids exit 3)
+      - name: Discover targets
+        id: targets
+        shell: bash
+        run: |
+          TARGETS=""
+          for d in admin includes public src lib; do
+            [ -d "$d" ] && TARGETS="$TARGETS $d"
+          done
+          if [ -z "$TARGETS" ]; then TARGETS="." ; fi
+          echo "targets=$TARGETS" >> "$GITHUB_OUTPUT"
+          echo "Lint targets: $TARGETS"
 
-      # Final: run with your ruleset using an absolute path and explicit targets
-      - name: Run PHPCS with repo ruleset
-        run: ~/.composer/vendor/bin/phpcs --standard="$(pwd)/phpcs.xml.dist" -s admin includes public
+      # Use repo ruleset if present; fallback to PSR12 so we always run
+      - name: Run PHPCS
+        shell: bash
+        run: |
+          RULESET="$(pwd)/phpcs.xml.dist"
+          CMD="~/.composer/vendor/bin/phpcs -s"
+          if [ -f "$RULESET" ]; then
+            echo "Using ruleset: $RULESET"
+            $CMD --standard="$RULESET" ${{ steps.targets.outputs.targets }}
+          else
+            echo "No phpcs.xml.dist found; using PSR12"
+            $CMD --standard=PSR12 ${{ steps.targets.outputs.targets }}
+          fi
