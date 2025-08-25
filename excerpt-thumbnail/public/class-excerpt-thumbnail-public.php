@@ -400,4 +400,102 @@ class Excerpt_Thumbnail_Public {
     private function yesno( $value ) {
         return ( 'yes' === $value );
     }
+
+    /**
+     * Output <meta property="og:image" content="..."> on single post pages,
+     * when enabled via settings. Uses Featured → first content image → default URL.
+     *
+     * @since 3.0.0
+     * @return void
+     */
+    public function maybe_add_og_image() {
+        if ( is_admin() || ! is_single() ) {
+            return;
+        }
+        if ( ! $this->yesno( get_option( 'tfe_add_og_image', 'yes' ) ) ) {
+            return;
+        }
+
+        global $post;
+        if ( ! $post instanceof WP_Post ) {
+            return;
+        }
+
+        $src = $this->resolve_image_src( $post->ID );
+        if ( ! $src ) {
+            return;
+        }
+
+        // Emit a single og:image tag. (We intentionally do not add width/height here.)
+        echo '<meta property="og:image" content="' . esc_url( $src ) . "\" />\n";
+    }
+
+    /**
+     * Resolve an image URL using the same priority as thumbnail output:
+     * 1) Featured image (full size)
+     * 2) First <img> within post content
+     * 3) Default image (if enabled and URL provided)
+     *
+     * @since 3.0.0
+     * @param int $post_id Post ID.
+     * @return string Image URL or empty string.
+     */
+    private function resolve_image_src( $post_id ) {
+        // 1) Featured image.
+        if ( function_exists( 'has_post_thumbnail' ) && has_post_thumbnail( $post_id ) ) {
+            $url = get_the_post_thumbnail_url( $post_id, 'full' );
+            if ( $url ) {
+                return $url;
+            }
+        }
+
+        // 2) First image in content.
+        $content = (string) get_post_field( 'post_content', $post_id );
+        $src     = $this->first_image_src_from_content( $content );
+        if ( $src ) {
+            return $src;
+        }
+
+        // 3) Default image if enabled.
+        if ( $this->yesno( get_option( 'tfe_default_image', 'yes' ) ) ) {
+            $fallback = (string) get_option( 'tfe_default_image_src', '' );
+            if ( $fallback ) {
+                return esc_url_raw( $fallback );
+            }
+        }
+
+        return '';
+    }
+
+    /**
+     * Extract only the "src" of the first <img> in post content.
+     *
+     * @since 3.0.0
+     * @param string $content Post content HTML.
+     * @return string Image URL or empty string.
+     */
+    private function first_image_src_from_content( $content ) {
+        if ( '' === trim( $content ) ) {
+            return '';
+        }
+
+        if ( function_exists( 'libxml_use_internal_errors' ) ) {
+            libxml_use_internal_errors( true );
+        }
+
+        $doc    = new DOMDocument();
+        $loaded = $doc->loadHTML( '<?xml encoding="utf-8" ?>' . $content, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD );
+        if ( ! $loaded ) {
+            return '';
+        }
+
+        $imgs = $doc->getElementsByTagName( 'img' );
+        if ( 0 === $imgs->length ) {
+            return '';
+        }
+
+        $src = $imgs->item( 0 )->getAttribute( 'src' );
+        return $src ? esc_url_raw( $src ) : '';
+    }
+
 }
