@@ -127,6 +127,8 @@ class Excerpt_Thumbnail_Admin {
         register_setting( $this->settings_group, 'tfe_on_search',           [ $this, 'sanitize_yesno' ] );
         register_setting( $this->settings_group, 'tfe_exclusion',           [ $this, 'sanitize_csv_ids' ] );
         register_setting( $this->settings_group, 'tfe_add_og_image',        [ $this, 'sanitize_yesno' ] );
+        register_setting( $this->settings_group, 'tfe_modern_mode',         [ $this, 'sanitize_yesno' ] );
+
 
         // If we later expose a custom "Read More" label, we’ll register it here.
         // register_setting( $this->settings_group, 'tfe_read_more_text',    [ $this, 'sanitize_text' ] );
@@ -213,6 +215,15 @@ class Excerpt_Thumbnail_Admin {
             $this->page_slug,
             'excerpt_thumbnail_main'
         );
+
+        add_settings_field(
+            'tfe_modern_mode',
+            __( 'Modern Mode (recommended)', 'excerpt-thumbnail' ),
+            [ $this, 'field_modern_mode' ],
+            $this->page_slug,
+            'excerpt_thumbnail_main'
+        );
+
     }
 
     /**
@@ -408,7 +419,29 @@ class Excerpt_Thumbnail_Admin {
             esc_html__( 'Output <meta property="og:image"> on single posts using the same image logic (Featured → first content image → default).', 'excerpt-thumbnail' )
         );
         echo '<p class="description">' . esc_html__( 'Uncheck if your SEO plugin already sets og:image to avoid duplicates.', 'excerpt-thumbnail' ) . '</p>';
-}
+    }
+
+    /**
+     * Modern Mode checkbox.
+     *
+     * When enabled:
+     * - Only modifies the_excerpt (no content forcing).
+     * - Registers a named image size "excerpt-thumbnail".
+     * - Uses that size for featured images.
+     *
+     * @since 3.0.0
+     * @return void
+     */
+    public function field_modern_mode() {
+        $value = get_option( 'tfe_modern_mode', 'no' ); // default: legacy behavior
+        printf(
+            '<label><input type="checkbox" name="tfe_modern_mode" value="yes"%s> %s</label>',
+            checked( $value, 'yes', false ),
+            esc_html__( 'Use excerpt-only output and the "excerpt-thumbnail" image size. Disable if you rely on legacy content-forcing.', 'excerpt-thumbnail' )
+        );
+        echo '<p class="description">' . esc_html__( 'Tip: After changing width/height, run a thumbnail regeneration plugin if you want new physical sizes for existing images.', 'excerpt-thumbnail' ) . '</p>';
+    }
+
 
     // ===== Sanitizers ========================================================
 
