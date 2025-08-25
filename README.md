@@ -85,13 +85,13 @@ Safely adds a thumbnail to post excerpts on home, archive, and search views—re
 
 ### Repo structure
 excerpt-thumbnail/
-├─ admin/
-├─ includes/
-├─ public/
-├─ languages/
-├─ excerpt-thumbnail.php
-├─ uninstall.php
-├─ readme.txt     (WordPress.org)
+  ├─ admin/
+  ├─ includes/
+  ├─ public/
+  ├─ languages/
+  ├─ excerpt-thumbnail.php
+  ├─ uninstall.php
+  ├─ readme.txt     (WordPress.org)
 └─ README.md      (this file)
 
 ---
@@ -111,9 +111,7 @@ CI for PHPCS is optional and can be set up later.
 ## Build a release ZIP
 
 1. Ensure version in excerpt-thumbnail.php is correct.
-
 2. Exclude dev files (vendor/, .github/, etc.).
-
 3. Zip the plugin folder and upload via Plugins → Add New.
 
 ---
@@ -146,5 +144,3 @@ Issues and PRs are welcome. Please:
 ## License
 
 GPL-2.0-or-later. © Patrick Coleman and contributors.
-
-::contentReference[oaicite:0]{index=0}
