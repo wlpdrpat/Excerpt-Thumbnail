@@ -32,11 +32,14 @@ jobs:
       - name: Show PHPCS version
         run: vendor/bin/phpcs --version
 
-      - name: Configure PHPCS installed_paths
+      - name: Configure PHPCS installed_paths (absolute paths)
         run: |
-          vendor/bin/phpcs --config-set installed_paths vendor/wp-coding-standards/wpcs,vendor/phpcompatibility/php-compatibility,vendor/phpcompatibility/phpcompatibility-wp
+          ROOT="$(pwd)"
+          vendor/bin/phpcs --config-set installed_paths \
+            "$ROOT/vendor/wp-coding-standards/wpcs,$ROOT/vendor/phpcompatibility/php-compatibility,$ROOT/vendor/phpcompatibility/phpcompatibility-wp"
           vendor/bin/phpcs -i
           vendor/bin/phpcs --config-show
 
       - name: Run PHPCS
         run: vendor/bin/phpcs --standard=phpcs.xml.dist
+
