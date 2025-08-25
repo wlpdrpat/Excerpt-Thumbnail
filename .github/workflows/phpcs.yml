@@ -26,7 +26,7 @@ jobs:
           key: composer-${{ runner.os }}-${{ hashFiles('**/composer.lock') }}
           restore-keys: composer-${{ runner.os }}-
 
-      # Install PHPCS + standards globally to avoid local vendor path issues
+      # Install PHPCS + standards globally
       - name: Install PHPCS tooling (global)
         run: |
           composer global config --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
@@ -36,17 +36,27 @@ jobs:
             phpcompatibility/php-compatibility:^9.3 \
             phpcompatibility/phpcompatibility-wp:^2.1
 
+      # --- Debug so we can see what's installed and where ---
+      - name: Debug env
+        run: |
+          php -v
+          composer --version
+          echo "PWD=$(pwd)"
+          ls -la
+          echo "----- phpcs.xml.dist -----"
+          cat phpcs.xml.dist || true
+
       - name: Show PHPCS version
         run: ~/.composer/vendor/bin/phpcs --version
 
       - name: Configure PHPCS installed_paths (global)
         run: |
           GROOT="$HOME/.composer/vendor"
-          ~/.composer/vendor/bin/phpcs --config-set installed_paths \
-            "$GROOT/wp-coding-standards/wpcs,$GROOT/phpcompatibility/php-compatibility,$GROOT/phpcompatibility/phpcompatibility-wp"
+          ~/.composer/vendor/bin/phpcs --config-set installed_paths "$GROOT/wp-coding-standards/wpcs,$GROOT/phpcompatibility/php-compatibility,$GROOT/phpcompatibility/phpcompatibility-wp"
           ~/.composer/vendor/bin/phpcs -i
           ~/.composer/vendor/bin/phpcs --config-show
 
-      # Run in the repo root using your phpcs.xml.dist
-      - name: Run PHPCS
-        run: ~/.composer/vendor/bin/phpcs --standard=phpcs.xml.dist
+      # Use an absolute path to the ruleset to avoid "file not found"
+      - name: Run PHPCS (ruleset file)
+        run: |
+          ~/.composer/vendor/bin/phpcs --standard="$(pwd)/phpcs.xml.dist" -s
