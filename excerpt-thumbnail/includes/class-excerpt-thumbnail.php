@@ -118,6 +118,10 @@ class Excerpt_Thumbnail {
 
     // Force content → excerpt on home/archive/search (legacy behavior).
     $this->loader->add_action( 'the_content',      $plugin_public, 'filter_the_content', 10, 1 );
+
+    // Add <meta property="og:image" ...> on single posts when enabled.
+    $this->loader->add_action( 'wp_head', $plugin_public, 'maybe_add_og_image', 5 );
+
 }
 
     /**
