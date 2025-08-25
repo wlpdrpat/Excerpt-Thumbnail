@@ -2,14 +2,12 @@
 /**
  * Public-facing functionality.
  *
- * Hooks into front-end rendering to:
- * - Prepend a thumbnail to post excerpts (site + feed).
- * - Force full content into an excerpt on home/archive/search contexts (legacy behavior).
+ * In legacy mode (default):
+ * - Forces content into excerpt on home/archive/search and prepends thumbnail.
  *
- * NOTE: This is a parity pass with the legacy plugin. We intentionally keep:
- * - Option keys: tfe_width, tfe_height, tfe_align, tfe_default_image, tfe_default_image_src,
- *                tfe_withlink, tfe_on_home, tfe_on_archives, tfe_on_search, tfe_exclusion.
- * - “Read More >>” link appended to forced excerpts (55 words).
+ * In Modern Mode:
+ * - Only modifies the_excerpt (no content forcing).
+ * - Uses a named image size "excerpt-thumbnail" for featured images.
  *
  * @link       https://wellplanet.com
  * @since      3.0.0
@@ -19,11 +17,6 @@
  * @license    GPL-2.0-or-later
  */
 
-/**
- * Enqueues public assets and implements legacy excerpt/thumbnail behavior.
- *
- * @since 3.0.0
- */
 class Excerpt_Thumbnail_Public {
 
     /** @since 3.0.0 @var string */
@@ -33,11 +26,11 @@ class Excerpt_Thumbnail_Public {
     private $version;
 
     /**
-     * Constructor.
+     * Ctor.
      *
      * @since 3.0.0
-     * @param string $slug    Plugin slug / text domain.
-     * @param string $version Plugin version.
+     * @param string $slug
+     * @param string $version
      */
     public function __construct( $slug, $version ) {
         $this->slug    = $slug;
@@ -51,18 +44,43 @@ class Excerpt_Thumbnail_Public {
     public function enqueue_scripts() {}
 
     // ======================================================================
+    // Setup
+    // ======================================================================
+
+    /**
+     * Register a named image size "excerpt-thumbnail" using current width/height.
+     * This lets WP pick a properly sized source for featured images in Modern Mode.
+     *
+     * Note: existing images won’t gain this size retroactively; use a regen plugin if needed.
+     *
+     * @since 3.0.0
+     * @return void
+     */
+    public function register_image_size() {
+        $w = max( 0, absint( get_option( 'tfe_width', 100 ) ) );
+        $h = max( 0, absint( get_option( 'tfe_height', 100 ) ) );
+
+        // Reasonable defaults to avoid zeroed size.
+        if ( 0 === $w && 0 === $h ) {
+            $w = 100; $h = 100;
+        }
+
+        // Hard crop if both provided, otherwise soft constraint.
+        $crop = ( $w > 0 && $h > 0 );
+        add_image_size( 'excerpt-thumbnail', $w ?: 9999, $h ?: 9999, $crop );
+    }
+
+    // ======================================================================
     // Filters
     // ======================================================================
 
     /**
      * Prepend a thumbnail to excerpts (site + feed).
-     *
-     * Mirrors legacy behavior of filtering 'the_excerpt' and 'the_excerpt_rss'.
-     * Respects category exclusions (only on category archives, per the legacy plugin).
+     * Respects contexts (home/archive/search) on site views; feed gets image regardless.
      *
      * @since 3.0.0
-     * @param string $excerpt Current excerpt HTML/text.
-     * @return string Modified excerpt with image prepended (when applicable).
+     * @param string $excerpt HTML/text.
+     * @return string
      */
     public function filter_the_excerpt( $excerpt ) {
         if ( is_admin() ) {
@@ -74,7 +92,22 @@ class Excerpt_Thumbnail_Public {
             return $excerpt;
         }
 
-        // Legacy: On category archive + post in excluded categories → skip.
+        // On site (non-feed), respect context toggles.
+        if ( ! is_feed() ) {
+            $on_home     = $this->yesno( get_option( 'tfe_on_home', 'yes' ) );
+            $on_archives = $this->yesno( get_option( 'tfe_on_archives', 'yes' ) );
+            $on_search   = $this->yesno( get_option( 'tfe_on_search', 'yes' ) );
+
+            $apply = ( is_home()     && $on_home )
+                  || ( is_archive()  && $on_archives )
+                  || ( is_search()   && $on_search );
+
+            if ( ! $apply ) {
+                return $excerpt;
+            }
+        }
+
+        // Exclusion behavior (legacy: only checked on category archives).
         $exclusion_csv = get_option( 'tfe_exclusion', '' );
         if ( is_category() && $this->post_in_excluded_categories( $post->ID, $exclusion_csv ) ) {
             return $excerpt;
@@ -82,12 +115,11 @@ class Excerpt_Thumbnail_Public {
 
         $image_html = $this->build_image_html( $post->ID );
 
-        // For feeds: convert class alignment to attribute alignment, as in legacy.
+        // Feed alignment transformation (legacy).
         if ( is_feed() && $image_html ) {
             $image_html = $this->feed_align_transform( $image_html );
         }
 
-        // Legacy calls do_shortcode() over the image HTML.
         if ( $image_html ) {
             $image_html = do_shortcode( $image_html );
         }
@@ -96,18 +128,21 @@ class Excerpt_Thumbnail_Public {
     }
 
     /**
-     * Force content → excerpt on home/archive/search (legacy behavior), then prepend thumbnail.
-     *
-     * The legacy plugin filtered 'the_content', created an excerpt if needed (55 words) and
-     * appended a “Read More >>” link, then ran its image-prepend routine.
+     * Legacy behavior: Force content → excerpt on home/archive/search, then prepend thumbnail.
+     * If Modern Mode is enabled, we skip this entirely.
      *
      * @since 3.0.0
-     * @param string $content The current post content.
-     * @return string Modified content (image + excerpt) or original content when not applicable.
+     * @param string $content
+     * @return string
      */
     public function filter_the_content( $content ) {
+        // Modern Mode aborts content forcing.
+        if ( $this->yesno( get_option( 'tfe_modern_mode', 'no' ) ) ) {
+            return $content;
+        }
+
         if ( is_admin() || is_single() || is_feed() ) {
-            return $content; // Legacy: do not force on singles or in feeds.
+            return $content;
         }
 
         global $post;
@@ -115,7 +150,6 @@ class Excerpt_Thumbnail_Public {
             return $content;
         }
 
-        // Legacy: only apply on these contexts when enabled.
         $on_home     = $this->yesno( get_option( 'tfe_on_home', 'yes' ) );
         $on_archives = $this->yesno( get_option( 'tfe_on_archives', 'yes' ) );
         $on_search   = $this->yesno( get_option( 'tfe_on_search', 'yes' ) );
@@ -128,16 +162,15 @@ class Excerpt_Thumbnail_Public {
             return $content;
         }
 
-        // Legacy: On category archive + post in excluded categories → skip.
         $exclusion_csv = get_option( 'tfe_exclusion', '' );
         if ( is_category() && $this->post_in_excluded_categories( $post->ID, $exclusion_csv ) ) {
             return $content;
         }
 
-        // Build an excerpt (parity with legacy): prefer post_excerpt; otherwise trim to 55 words.
+        // Build excerpt HTML (55 words + “Read More >>”).
         $excerpt_html = $this->build_excerpt_html( $post );
 
-        // Prepend thumbnail (legacy order).
+        // Prepend thumbnail.
         $image_html = $this->build_image_html( $post->ID );
         if ( $image_html ) {
             $image_html = do_shortcode( $image_html );
@@ -147,34 +180,28 @@ class Excerpt_Thumbnail_Public {
     }
 
     // ======================================================================
-    // Helpers (parity)
+    // Helpers
     // ======================================================================
 
     /**
-     * Build the excerpt HTML:
-     * - If post_excerpt exists, use it as-is (no recursive excerpt filters to avoid double-images).
-     * - Else, trim content to 55 words and append the legacy “Read More >>” link.
-     * - Wrap in <p>…</p> (legacy did this for the generated case; we match for consistency).
+     * Build the excerpt HTML block (parity: 55 words + Read More link).
      *
      * @since 3.0.0
-     * @param WP_Post $post Post object.
-     * @return string HTML.
+     * @param WP_Post $post
+     * @return string
      */
     private function build_excerpt_html( WP_Post $post ) {
         $excerpt = $post->post_excerpt;
 
         if ( is_string( $excerpt ) && '' !== trim( $excerpt ) ) {
-            // Use author-provided excerpt. Keep simple paragraph wrapper for consistency.
             return '<p>' . wp_kses_post( $excerpt ) . '</p>';
         }
 
-        // Derive from content:
         $raw = get_post_field( 'post_content', $post->ID );
         $raw = strip_shortcodes( $raw );
         $raw = str_replace( ']]>', ']]&gt;', $raw );
         $raw = wp_strip_all_tags( $raw );
 
-        // Legacy: 55 words, then append link.
         $trimmed = wp_trim_words( $raw, 55, '' );
 
         $read_more = sprintf(
@@ -187,83 +214,85 @@ class Excerpt_Thumbnail_Public {
     }
 
     /**
-     * Build the image HTML using the legacy priority:
-     * 1) Featured image (if set) using user width/height as a size array.
-     * 2) First image in post content (DOM parse fallback).
-     * 3) Default image (if enabled).
+     * Build the image HTML using priority:
+     * 1) Featured image
+     * 2) First <img> in content
+     * 3) Default image (if enabled)
      *
-     * Alignment classes match legacy: alignleft|alignright|aligncenter + "wp-post-image tfe".
-     * If "with link" is enabled, the image is wrapped in <a href="permalink">…</a>.
+     * Modern Mode uses the named size "excerpt-thumbnail" for featured images.
      *
      * @since 3.0.0
-     * @param int $post_id Post ID.
-     * @return string HTML (possibly empty).
+     * @param int $post_id
+     * @return string
      */
     private function build_image_html( $post_id ) {
         $width        = max( 0, absint( get_option( 'tfe_width', 100 ) ) );
         $height       = max( 0, absint( get_option( 'tfe_height', 100 ) ) );
         $align        = $this->sanitize_align( get_option( 'tfe_align', 'left' ) );
-        $with_link    = $this->yesno( get_option( 'tfe_withlink', 'yes' ) );        // legacy default ≈ yes
-        $use_default  = $this->yesno( get_option( 'tfe_default_image', 'yes' ) );   // legacy default ≈ yes
+        $with_link    = $this->yesno( get_option( 'tfe_withlink', 'yes' ) );
+        $use_default  = $this->yesno( get_option( 'tfe_default_image', 'yes' ) );
         $default_src  = (string) get_option( 'tfe_default_image_src', '' );
+        $modern_mode  = $this->yesno( get_option( 'tfe_modern_mode', 'no' ) );
 
         $classes = 'align' . $align . ' wp-post-image tfe';
 
-        // 1) Featured image first (legacy).
+        // 1) Featured image
         if ( function_exists( 'has_post_thumbnail' ) && has_post_thumbnail( $post_id ) ) {
-            $img = get_the_post_thumbnail(
+            $size = $modern_mode ? 'excerpt-thumbnail' : [ $width ?: 100, $height ?: 100 ];
+
+            $img  = get_the_post_thumbnail(
                 $post_id,
-                [ $width ?: 100, $height ?: 100 ],
+                $size,
                 [ 'class' => $classes ]
             );
+
             if ( $img ) {
-                return $with_link ? $this->wrap_link( get_permalink( $post_id ), $img ) : $img;
+                $label = sprintf( /* translators: %s: post title */ __( 'View: %s', 'excerpt-thumbnail' ), get_the_title( $post_id ) );
+                return $with_link ? $this->wrap_link( get_permalink( $post_id ), $img, $label ) : $img;
             }
         }
 
-        // 2) First image in content.
+        // 2) First content image
         $content = (string) get_post_field( 'post_content', $post_id );
-        $img     = $this->first_image_from_content( $content, $width, $height, $classes );
+        $img     = $this->first_image_from_content( $content, $width, $height, $classes, get_the_title( $post_id ) );
         if ( $img ) {
-            return $with_link ? $this->wrap_link( get_permalink( $post_id ), $img ) : $img;
+            $label = sprintf( __( 'View: %s', 'excerpt-thumbnail' ), get_the_title( $post_id ) );
+            return $with_link ? $this->wrap_link( get_permalink( $post_id ), $img, $label ) : $img;
         }
 
-        // 3) Default image if enabled.
+        // 3) Default image
         if ( $use_default && $default_src ) {
-            $img = $this->img_tag( $default_src, $width, $height, $classes, '', '' );
-            return $with_link ? $this->wrap_link( get_permalink( $post_id ), $img ) : $img;
+            $img   = $this->img_tag( $default_src, $width, $height, $classes, get_the_title( $post_id ), '' );
+            $label = sprintf( __( 'View: %s', 'excerpt-thumbnail' ), get_the_title( $post_id ) );
+            return $with_link ? $this->wrap_link( get_permalink( $post_id ), $img, $label ) : $img;
         }
 
         return '';
     }
 
     /**
-     * Extract the first <img> from post content using DOM, capturing src/alt/title.
-     * Falls back gracefully if DOM parsing fails.
+     * Extract the first <img> from HTML and rebuild it with our sizing/classes.
+     * Falls back on provided $fallback_alt when no alt is present.
      *
      * @since 3.0.0
-     * @param string $content Post content.
-     * @param int    $width   Width attribute (0 means omit).
-     * @param int    $height  Height attribute (0 means omit).
-     * @param string $classes Class attribute to apply.
-     * @return string HTML or empty string.
+     * @param string $content
+     * @param int    $width
+     * @param int    $height
+     * @param string $classes
+     * @param string $fallback_alt
+     * @return string
      */
-    private function first_image_from_content( $content, $width, $height, $classes ) {
+    private function first_image_from_content( $content, $width, $height, $classes, $fallback_alt = '' ) {
         if ( '' === trim( $content ) ) {
             return '';
         }
 
-        // Suppress libxml warnings for malformed HTML fragments.
         if ( function_exists( 'libxml_use_internal_errors' ) ) {
             libxml_use_internal_errors( true );
         }
 
-        $doc = new DOMDocument();
-        $loaded = $doc->loadHTML(
-            '<?xml encoding="utf-8" ?>' . $content,
-            LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD
-        );
-
+        $doc    = new DOMDocument();
+        $loaded = $doc->loadHTML( '<?xml encoding="utf-8" ?>' . $content, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD );
         if ( ! $loaded ) {
             return '';
         }
@@ -273,28 +302,33 @@ class Excerpt_Thumbnail_Public {
             return '';
         }
 
-        $img   = $imgs->item( 0 );
-        $src   = $img->getAttribute( 'src' );
+        $node  = $imgs->item( 0 );
+        $src   = $node->getAttribute( 'src' );
         if ( ! $src ) {
             return '';
         }
-        $alt   = $img->getAttribute( 'alt' );
-        $title = $img->getAttribute( 'title' );
+        $alt   = $node->getAttribute( 'alt' );
+        $title = $node->getAttribute( 'title' );
+
+        if ( '' === $alt && '' !== $fallback_alt ) {
+            $alt = $fallback_alt;
+        }
 
         return $this->img_tag( $src, $width, $height, $classes, $alt, $title );
     }
 
     /**
      * Create an <img> tag with optional width/height and classes.
+     * Adds loading="lazy" to non-featured images we build manually.
      *
      * @since 3.0.0
-     * @param string $src     Image URL.
-     * @param int    $width   Width attribute (0 means omit).
-     * @param int    $height  Height attribute (0 means omit).
-     * @param string $classes Class attribute.
-     * @param string $alt     Alt text.
-     * @param string $title   Title attribute.
-     * @return string HTML.
+     * @param string $src
+     * @param int    $width
+     * @param int    $height
+     * @param string $classes
+     * @param string $alt
+     * @param string $title
+     * @return string
      */
     private function img_tag( $src, $width, $height, $classes, $alt = '', $title = '' ) {
         $attrs = [];
@@ -314,6 +348,8 @@ class Excerpt_Thumbnail_Public {
         if ( '' !== $title ) {
             $attrs[] = 'title="' . esc_attr( $title ) . '"';
         }
+        // Performance hint.
+        $attrs[] = 'loading="lazy"';
 
         return '<img ' . implode( ' ', $attrs ) . ' />';
     }
@@ -322,22 +358,23 @@ class Excerpt_Thumbnail_Public {
      * Wrap content in a permalink <a>.
      *
      * @since 3.0.0
-     * @param string $url URL.
-     * @param string $html Inner HTML.
+     * @param string $url
+     * @param string $html
+     * @param string $aria_label Optional accessible label.
      * @return string
      */
-    private function wrap_link( $url, $html ) {
-        return '<a href="' . esc_url( $url ) . '">' . $html . '</a>';
+    private function wrap_link( $url, $html, $aria_label = '' ) {
+        $label_attr = $aria_label ? ' aria-label="' . esc_attr( $aria_label ) . '"' : '';
+        return '<a href="' . esc_url( $url ) . '"' . $label_attr . '>' . $html . '</a>';
     }
 
     /**
-     * Legacy “category exclusion” check:
-     * It only applies on category archive pages (is_category()).
+     * Category-exclusion check (applies on category archives).
      *
      * @since 3.0.0
-     * @param int    $post_id       Post ID.
-     * @param string $exclusion_csv CSV of category IDs (e.g., "2,7,15").
-     * @return bool True if the post is in any excluded category.
+     * @param int    $post_id
+     * @param string $exclusion_csv
+     * @return bool
      */
     private function post_in_excluded_categories( $post_id, $exclusion_csv ) {
         $exclusion_csv = trim( (string) $exclusion_csv );
@@ -352,19 +389,16 @@ class Excerpt_Thumbnail_Public {
     }
 
     /**
-     * Transform class-based alignment into feed-safe align attributes (legacy).
-     * If 'aligncenter' → wrap in <p align="center">…</p>, else set <img align="left|right">.
+     * Feed align transform (legacy).
      *
      * @since 3.0.0
-     * @param string $image_html HTML of the image.
+     * @param string $image_html
      * @return string
      */
     private function feed_align_transform( $image_html ) {
         if ( false !== strpos( $image_html, 'aligncenter' ) ) {
             return '<p align="center">' . $image_html . '</p>';
         }
-
-        // Convert class="alignleft|alignright …" into align="left|right" on <img>.
         if ( preg_match( '/class="([^"]*)"/i', $image_html, $m ) ) {
             $classes = $m[1];
             if ( false !== strpos( $classes, 'alignleft' ) ) {
@@ -378,10 +412,10 @@ class Excerpt_Thumbnail_Public {
     }
 
     /**
-     * Sanitize alignment (left|right|center).
+     * Sanitize alignment to left|right|center.
      *
      * @since 3.0.0
-     * @param mixed $value Raw option.
+     * @param mixed $value
      * @return string
      */
     private function sanitize_align( $value ) {
@@ -391,19 +425,22 @@ class Excerpt_Thumbnail_Public {
     }
 
     /**
-     * Legacy yes/no → boolean.
+     * yes/no → bool helper.
      *
      * @since 3.0.0
-     * @param mixed $value Raw option.
-     * @return bool True when "yes".
+     * @param mixed $value
+     * @return bool
      */
     private function yesno( $value ) {
         return ( 'yes' === $value );
     }
 
+    // ======================================================================
+    // Step 3.1: og:image (unchanged from your previous step)
+    // ======================================================================
+
     /**
-     * Output <meta property="og:image" content="..."> on single post pages,
-     * when enabled via settings. Uses Featured → first content image → default URL.
+     * Output <meta property="og:image"> on single posts (if enabled).
      *
      * @since 3.0.0
      * @return void
@@ -425,77 +462,61 @@ class Excerpt_Thumbnail_Public {
         if ( ! $src ) {
             return;
         }
-
-        // Emit a single og:image tag. (We intentionally do not add width/height here.)
         echo '<meta property="og:image" content="' . esc_url( $src ) . "\" />\n";
     }
 
     /**
-     * Resolve an image URL using the same priority as thumbnail output:
-     * 1) Featured image (full size)
-     * 2) First <img> within post content
-     * 3) Default image (if enabled and URL provided)
+     * Resolve image URL via Featured → first content image → default URL.
      *
      * @since 3.0.0
-     * @param int $post_id Post ID.
-     * @return string Image URL or empty string.
+     * @param int $post_id
+     * @return string
      */
     private function resolve_image_src( $post_id ) {
-        // 1) Featured image.
         if ( function_exists( 'has_post_thumbnail' ) && has_post_thumbnail( $post_id ) ) {
             $url = get_the_post_thumbnail_url( $post_id, 'full' );
             if ( $url ) {
                 return $url;
             }
         }
-
-        // 2) First image in content.
         $content = (string) get_post_field( 'post_content', $post_id );
         $src     = $this->first_image_src_from_content( $content );
         if ( $src ) {
             return $src;
         }
-
-        // 3) Default image if enabled.
         if ( $this->yesno( get_option( 'tfe_default_image', 'yes' ) ) ) {
             $fallback = (string) get_option( 'tfe_default_image_src', '' );
             if ( $fallback ) {
                 return esc_url_raw( $fallback );
             }
         }
-
         return '';
     }
 
     /**
-     * Extract only the "src" of the first <img> in post content.
+     * Extract "src" of first content image.
      *
      * @since 3.0.0
-     * @param string $content Post content HTML.
-     * @return string Image URL or empty string.
+     * @param string $content
+     * @return string
      */
     private function first_image_src_from_content( $content ) {
         if ( '' === trim( $content ) ) {
             return '';
         }
-
         if ( function_exists( 'libxml_use_internal_errors' ) ) {
             libxml_use_internal_errors( true );
         }
-
         $doc    = new DOMDocument();
         $loaded = $doc->loadHTML( '<?xml encoding="utf-8" ?>' . $content, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD );
         if ( ! $loaded ) {
             return '';
         }
-
         $imgs = $doc->getElementsByTagName( 'img' );
         if ( 0 === $imgs->length ) {
             return '';
         }
-
         $src = $imgs->item( 0 )->getAttribute( 'src' );
         return $src ? esc_url_raw( $src ) : '';
     }
-
 }
