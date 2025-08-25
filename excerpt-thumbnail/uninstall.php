@@ -1,31 +1,43 @@
 <?php
-
 /**
- * Fired when the plugin is uninstalled.
+ * Plugin uninstall cleanup.
  *
- * When populating this file, consider the following flow
- * of control:
+ * Deletes plugin options only when the user has opted in via the
+ * "Remove Data on Uninstall" setting.
  *
- * - This method should be static
- * - Check if the $_REQUEST content actually is the plugin name
- * - Run an admin referrer check to make sure it goes through authentication
- * - Verify the output of $_GET makes sense
- * - Repeat with other user roles. Best directly by using the links/query string parameters.
- * - Repeat things for multisite. Once for a single site in the network, once sitewide.
- *
- * This file may be updated more in future version of the Boilerplate; however, this is the
- * general skeleton and outline for how the file should work.
- *
- * For more information, see the following discussion:
- * https://github.com/tommcfarlin/WordPress-Plugin-Boilerplate/pull/123#issuecomment-28541913
- *
- * @link       http://wellplanet.com
- * @since      1.0.0
- *
+ * @link       https://wellplanet.com
+ * @since      3.0.0
  * @package    Excerpt_Thumbnail
+ * @author     Patrick Coleman <pat@wellplanet.com>
+ * @license    GPL-2.0-or-later
  */
 
-// If uninstall not called from WordPress, then exit.
 if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
-	exit;
+    exit;
+}
+
+// Only remove data if the user explicitly opted in.
+if ( 'yes' !== get_option( 'tfe_cleanup_on_uninstall', 'no' ) ) {
+    return;
+}
+
+// List all options this plugin creates.
+$option_keys = [
+    'tfe_width',
+    'tfe_height',
+    'tfe_align',
+    'tfe_default_image',
+    'tfe_default_image_src',
+    'tfe_withlink',
+    'tfe_on_home',
+    'tfe_on_archives',
+    'tfe_on_search',
+    'tfe_exclusion',
+    'tfe_add_og_image',
+    'tfe_modern_mode',
+    'tfe_cleanup_on_uninstall',
+];
+
+foreach ( $option_keys as $key ) {
+    delete_option( $key );
 }
