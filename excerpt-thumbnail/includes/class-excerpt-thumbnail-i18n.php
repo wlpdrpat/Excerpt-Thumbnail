@@ -44,14 +44,15 @@ class Excerpt_Thumbnail_i18n {
 	/**
 	 * Load the plugin textdomain.
 	 *
+	 * No-op since WP 4.6 for plugins hosted on WordPress.org:
+	 * translations are auto-loaded for the plugin slug.
+	 *
 	 * @since 1.0.0
 	 * @return void
 	 */
 	public function load_plugin_textdomain() {
-		load_plugin_textdomain(
-			$this->domain,
-			false,
-			dirname( plugin_basename( EXCERPT_THUMBNAIL_FILE ) ) . '/languages'
-		);
+		// Intentionally left blank to satisfy Plugin Check:
+		// load_plugin_textdomain() is discouraged for WP.org-hosted plugins.
+		return;
 	}
 }
