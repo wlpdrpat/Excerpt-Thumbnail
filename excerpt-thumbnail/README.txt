@@ -1,14 +1,16 @@
 === Excerpt Thumbnail ===
-Contributors: wellplanet
-Tags: thumbnails, excerpts, featured image, archives, search
+Contributors: wlpdrpat
+Donate link: https://wellplanet.com
+Tags: excerpt, thumbnail, featured image, archive, search, blog
 Requires at least: 5.8
 Tested up to: 6.6
 Requires PHP: 7.4
-Stable tag: 3.0.0-dev
+Stable tag: 1.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Safely adds a thumbnail to post excerpts on home, archive, and search views. Rebuilt on the WordPress Plugin Boilerplate.
+Safely adds a featured image thumbnail to post excerpts on archive, search, and home views. Rebuilt using the WordPress Plugin Boilerplate.
+
 
 == Description ==
 - Image priority: Featured Image → first image in content → default image URL.
