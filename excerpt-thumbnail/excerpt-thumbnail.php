@@ -11,7 +11,7 @@
  * Text Domain: excerpt-thumbnail
  * Domain Path: /languages
  * Requires at least: 5.8
- * Tested up to: 6.6
+ * Tested up to: 6.8
  * Requires PHP: 7.4
  *
  * @package Excerpt_Thumbnail
