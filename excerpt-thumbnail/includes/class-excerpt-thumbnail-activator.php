@@ -1,29 +1,22 @@
 <?php
 /**
- * Fired during plugin activation.
+ * Fired during plugin activation
  *
- * @link       https://wellplanet.com
- * @since      3.0.0
- * @package    Excerpt_Thumbnail
- * @subpackage Excerpt_Thumbnail/includes
- * @author     Patrick Coleman <pat@wellplanet.com>
- * @license    GPL-2.0-or-later
+ * @package Excerpt_Thumbnail
+ * @since   1.0.0
  */
 
-/**
- * Defines all code executed during plugin activation.
- *
- * @since 3.0.0
- */
+defined( 'ABSPATH' ) || exit;
+
 class Excerpt_Thumbnail_Activator {
 
-    /**
-     * Run activation routines.
-     *
-     * @since 3.0.0
-     * @return void
-     */
-    public static function activate() {
-        // Nothing yet.
-    }
+	public static function activate() {
+		// Run the legacy → new options migration on first activation.
+		if ( ! class_exists( 'Excerpt_Thumbnail_Migrator' ) ) {
+			require_once plugin_dir_path( __FILE__ ) . 'class-excerpt-thumbnail-migrator.php';
+		}
+		Excerpt_Thumbnail_Migrator::maybe_migrate_legacy_options();
+
+		// (Optional) Seed defaults here if you have any.
+	}
 }
