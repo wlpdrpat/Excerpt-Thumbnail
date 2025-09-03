@@ -28,6 +28,17 @@ define( 'EXCERPT_THUMBNAIL_DIR', plugin_dir_path( __FILE__ ) );
 define( 'EXCERPT_THUMBNAIL_URL', plugin_dir_url( __FILE__ ) );
 
 /**
+ * Safety net: migrate legacy tfe_* options → excerpt_thumbnail_* on admin load.
+ * This runs even if the activation hook didn’t fire (e.g., manual copy).
+ */
+add_action( 'admin_init', function () {
+	if ( ! class_exists( 'Excerpt_Thumbnail_Migrator' ) ) {
+		require_once EXCERPT_THUMBNAIL_DIR . 'includes/class-excerpt-thumbnail-migrator.php';
+	}
+	Excerpt_Thumbnail_Migrator::maybe_migrate_legacy_options();
+} );
+
+/**
  * Activation and deactivation hooks
  */
 register_activation_hook( __FILE__, 'activate_excerpt_thumbnail' );
