@@ -1,1 +1,149 @@
+# Copyright (C) 2025 Excerpt Thumbnail
+# This file is distributed under the same license as the Excerpt Thumbnail plugin.
+msgid ""
+msgstr ""
+"Project-Id-Version: Excerpt Thumbnail 1.0.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/excerpt-thumbnail\n"
+"POT-Creation-Date: 2025-09-03 00:00+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: \n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Domain: excerpt-thumbnail\n"
+
+#: admin/class-excerpt-thumbnail-admin.php
+msgid "Excerpt Thumbnail"
+msgstr ""
+
+#: admin/class-excerpt-thumbnail-admin.php
+msgid "Excerpt Thumbnail Settings"
+msgstr ""
+
+#: admin/class-excerpt-thumbnail-admin.php
+msgid "Control how thumbnails are added to excerpts on home, archive, and search pages."
+msgstr ""
+
+#: admin/class-excerpt-thumbnail-admin.php
+msgid "Image Width (px)"
+msgstr ""
+
+#: admin/class-excerpt-thumbnail-admin.php
+msgid "Image Height (px)"
+msgstr ""
+
+#: admin/class-excerpt-thumbnail-admin.php
+msgid "Alignment"
+msgstr ""
+
+#: admin/class-excerpt-thumbnail-admin.php
+msgid "Left"
+msgstr ""
+
+#: admin/class-excerpt-thumbnail-admin.php
+msgid "Right"
+msgstr ""
+
+#: admin/class-excerpt-thumbnail-admin.php
+msgid "Center"
+msgstr ""
+
+#: admin/class-excerpt-thumbnail-admin.php
+msgid "Link Image to Post"
+msgstr ""
+
+#: admin/class-excerpt-thumbnail-admin.php
+msgid "Wrap thumbnail in a link to the post"
+msgstr ""
+
+#: admin/class-excerpt-thumbnail-admin.php
+msgid "Use Default Image if none found"
+msgstr ""
+
+#: admin/class-excerpt-thumbnail-admin.php
+msgid "If no image found, use the Default Image URL below"
+msgstr ""
+
+#: admin/class-excerpt-thumbnail-admin.php
+msgid "Default Image URL"
+msgstr ""
+
+#: admin/class-excerpt-thumbnail-admin.php
+msgid "Where to show thumbnails"
+msgstr ""
+
+#: admin/class-excerpt-thumbnail-admin.php
+msgid "Home / blog index"
+msgstr ""
+
+#: admin/class-excerpt-thumbnail-admin.php
+msgid "Category/Tag/Date archives"
+msgstr ""
+
+#: admin/class-excerpt-thumbnail-admin.php
+msgid "Search results"
+msgstr ""
+
+#: admin/class-excerpt-thumbnail-admin.php
+msgid "Exclude Categories (CSV of IDs)"
+msgstr ""
+
+#: admin/class-excerpt-thumbnail-admin.php
+msgid "Enter category IDs to exclude (comma-separated)."
+msgstr ""
+
+#: admin/class-excerpt-thumbnail-admin.php
+msgid "Add Open Graph Image"
+msgstr ""
+
+#: admin/class-excerpt-thumbnail-admin.php
+msgid "Output <meta property=\"og:image\"> on single posts using the same image logic (Featured → first content image → default)."
+msgstr ""
+
+#: admin/class-excerpt-thumbnail-admin.php
+msgid "Uncheck if your SEO plugin already sets og:image to avoid duplicates."
+msgstr ""
+
+#: admin/class-excerpt-thumbnail-admin.php
+msgid "Modern Mode (recommended)"
+msgstr ""
+
+#: admin/class-excerpt-thumbnail-admin.php
+msgid "Use excerpt-only output and the \"excerpt-thumbnail\" image size. Disable if you rely on legacy content-forcing."
+msgstr ""
+
+#: admin/class-excerpt-thumbnail-admin.php
+msgid "Tip: After changing width/height, run a thumbnail regeneration plugin if you want new physical sizes for existing images."
+msgstr ""
+
+#: admin/class-excerpt-thumbnail-admin.php
+msgid "Remove Data on Uninstall"
+msgstr ""
+
+#: admin/class-excerpt-thumbnail-admin.php
+msgid "When the plugin is deleted, remove all Excerpt Thumbnail settings."
+msgstr ""
+
+#: admin/class-excerpt-thumbnail-admin.php
+msgid "Recommended on staging/dev. Leave unchecked in production if you may reinstall later."
+msgstr ""
+
+#: admin/class-excerpt-thumbnail-admin.php
+msgid "Save Changes"
+msgstr ""
+
+#: admin/class-excerpt-thumbnail-admin.php
+msgid "Tip: Featured image is used first; if none, the first image in the content is used; if still none and enabled, the default image is used."
+msgstr ""
+
+#: public/class-excerpt-thumbnail-public.php
+msgid "Read More >>"
+msgstr ""
+
+#: public/class-excerpt-thumbnail-public.php
+msgid "View: %s"
+msgstr ""
+
 
