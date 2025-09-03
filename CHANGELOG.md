@@ -1,70 +1,137 @@
-# Changelog
-All notable changes to this project will be documented in this file.
+# Excerpt Thumbnail
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+Safely adds a featured image thumbnail to post excerpts on archive, search, and home views. Built for modern WordPress with secure settings, internationalization, and graceful migration from legacy installs.
 
-## [Unreleased]
-### Added
-- (Planned) Setting + filter to customize the “Read More” link text.
-- (Planned) Small cache layer for first-image DOM parsing.
-- (Planned) Consolidate scattered `tfe_*` options into a single array option with backward-compat shim.
-
-### Changed
-- (Planned) Expand WordPress Coding Standards coverage and re-enable CI once org settings allow.
+- **Requires WordPress:** 5.8+
+- **Tested up to:** 6.6
+- **Requires PHP:** 7.4+
+- **License:** GPLv2 or later
 
 ---
 
-## [3.0.0-dev] — 2025-08-25
-> Major internal rebuild on the WordPress Plugin Boilerplate. **Legacy behavior is preserved by default.**
+## Features
 
-### Added
-- **Boilerplate core**: `includes/`, `admin/`, `public/`, loader, i18n scaffold, activator/deactivator classes.
-- **Settings page (Settings → Excerpt Thumbnail)** using the Settings API with sanitization and capability checks.
-- **Open Graph (`og:image`) output** on single posts, controlled by `tfe_add_og_image` (default **on**).
-- **Modern Mode** (opt-in via `tfe_modern_mode`): uses `the_excerpt` only (no content forcing) and registers image size `excerpt-thumbnail`.
-- **Uninstall safety**: `uninstall.php` that deletes options only when `tfe_cleanup_on_uninstall` is enabled.
-- **Documentation**: WordPress `readme.txt` and GitHub `README.md`.
-- **Tooling (local)**: `composer.json` with PHPCS/WPCS/PHPCompatibility dev deps and a `phpcs.xml.dist` ruleset (CI setup deferred).
-
-### Changed
-- **Safer image selection**: core APIs (`has_post_thumbnail`, `get_the_post_thumbnail[_url]`, `get_post_field`) replace any direct DB access.
-- **Sanitize-on-save / escape-on-output** throughout admin UI and public rendering.
-- **Consistent naming**: unified slug `excerpt-thumbnail` and class prefix `Excerpt_Thumbnail_*`.
-
-### Fixed
-- Feed alignment now uses legacy-compatible attributes (e.g., `align="left|right"` or centered `<p>`), improving reader compatibility.
-- Category exclusion logic clarified to match legacy scope (category archives).
-
-### Deprecated
-- None.
-
-### Removed
-- No functional removals; legacy behavior remains the default.
-
-### Security
-- Added strict sanitizers: `absint`, URL whitelisting via `esc_url_raw`, yes/no whitelists, alignment whitelist, CSV ID normalization.
-- Capability checks (`manage_options`) and nonces for settings operations.
-
-### Migration notes
-- **Settings**: existing `tfe_*` option keys are preserved. New options:
-  - `tfe_add_og_image` (yes/no) — controls `<meta property="og:image">` on single posts.
-  - `tfe_modern_mode` (yes/no) — excerpt-only mode + named image size.
-  - `tfe_cleanup_on_uninstall` (yes/no) — opt-in data removal when the plugin is uninstalled.
-- **Defaults**: Legacy behavior remains the default (content-forcing on archive contexts). Enable **Modern Mode** to switch to excerpt-only output.
-- **Thumbnails**: After changing width/height in Modern Mode, run a thumbnail regeneration plugin so existing attachments get the new `excerpt-thumbnail` size.
-- **SEO**: If your SEO plugin already outputs `og:image`, uncheck **Add Open Graph Image** to avoid duplicates.
-
-### Historical note
-- The legacy plugin inspiration was **“Thumbnail For Excerpts”** by **@radukn** on WordPress.org: <https://wordpress.org/plugins/thumbnail-for-excerpts/>.  
-  That plugin was **closed on June 16, 2022** and is not available for download due to **Guideline Violation** (per WordPress.org).  
-- Since **2016**, Patrick Coleman has independently developed and maintained a version based on that legacy plugin.  
-- **This 3.x line** is a clean **redevelopment** using the modern WordPress Plugin Boilerplate, with security and maintainability improvements while preserving expected behavior.
+- **Smart image selection:** Featured Image → first image in content → default image URL.
+- **Per-context control:** Toggle for Home, Archives, and Search.
+- **Layout options:** Alignment (left/right/center), link image to post, optional `<meta property="og:image">`.
+- **Modern Mode (recommended):** Only modifies `the_excerpt` (no content forcing) and uses a named image size `excerpt-thumbnail`.
+- **Lightweight & secure:** No tracking, no remote assets. Strict sanitize/escape. Clean uninstall (opt-in).
 
 ---
 
-## [2.x] — Pre-rebuild (legacy)
-- Historical plugin providing thumbnails on home/archive/search with the following priority:
-  Featured Image → first image in content → default image URL.
-- Options stored as individual `tfe_*` keys; legacy admin page and forcing of excerpts on archive contexts.
-- **Historical note:** 2.x lineage was based on the WordPress.org plugin “Thumbnail For Excerpts” (by @radukn). After that plugin’s closure on **June 16, 2022** for **Guideline Violation**, this codebase continued as an independently maintained fork until being rebuilt for 3.x.
+## Installation
+
+1. Upload the `excerpt-thumbnail` folder to `/wp-content/plugins/` (or install from the Plugins screen once published).
+2. Activate **Excerpt Thumbnail**.
+3. Open **Settings → Excerpt Thumbnail** and configure.
+
+> **Tip:** If you switch Modern Mode on and change width/height, use a thumbnail regeneration plugin so existing images get the new `excerpt-thumbnail` size.
+
+---
+
+## How it works
+
+- **Where it applies:** Home, archive, and search templates; RSS also receives the image with legacy-compatible alignment.
+- **Image priority:**  
+  1) Featured Image  
+  2) First `<img>` found in post content  
+  3) Default image URL (if enabled)
+- **Modern Mode:** Registers `add_image_size( 'excerpt-thumbnail', {W}, {H}, $crop )` and uses it for featured images. Disables legacy “force content → excerpt” behavior.
+
+---
+
+## Settings overview
+
+- **Image Width / Height (px)** – used for manual `<img>` tags and the registered image size in Modern Mode.  
+- **Alignment** – `left`, `right`, or `center`.  
+- **Link Image to Post** – wraps the thumbnail in a permalink.  
+- **Use Default Image** + **Default Image URL** – fallback if no featured/content image.  
+- **Where to show** – Home, Archives, Search.  
+- **Exclude Categories (CSV of IDs)** – skip output on certain category archives.  
+- **Add Open Graph Image** – outputs `<meta property="og:image">` on single posts.  
+- **Modern Mode (recommended)** – use `the_excerpt` only + named image size.  
+- **Remove Data on Uninstall** – opt-in cleanup of settings on delete.
+
+---
+
+## Accessibility & performance
+
+- Featured images use core markup; manually built images include `alt` where possible and `loading="lazy"` hints.
+- The clickable image (when enabled) includes an accessible label like **“View: {Post Title}”**.
+
+---
+
+## Migration (legacy → new)
+
+If you previously used a version that stored **`tfe_*`** options (or the legacy “Thumbnail For Excerpts” plugin), this plugin:
+
+- **Automatically migrates** `tfe_*` options → `excerpt_thumbnail_*` on activation (and again on admin load as a safety net).  
+- Only **copies values if the new keys aren’t already set**, then **deletes** the old `tfe_*` keys.  
+- You can safely remove any old plugin; settings will carry over.
+
+> Legacy note: “Thumbnail For Excerpts” by @radukn was closed on June 16, 2022 (WordPress.org). This project is a clean redevelopment preserving expected behavior.
+
+---
+
+## Internationalization
+
+- Text domain: `excerpt-thumbnail`  
+- POT file: `languages/excerpt-thumbnail.pot`
+
+Contributions of translations are welcome via PRs or translation platforms.
+
+---
+
+## Contributing
+
+- Follow WordPress Coding Standards (PHPCS).  
+- Keep user-facing strings wrapped for i18n.  
+- Avoid remote assets or tracking.  
+- PRs welcome for docs, i18n, and feature refinements.
+
+---
+
+## Security
+
+- Input sanitized; output escaped.  
+- Capability checks on settings (`manage_options`).  
+- Nonces for settings save actions.  
+- **Uninstall:** Deletes options **only** if the user enables “Remove Data on Uninstall”.
+
+---
+
+## Changelog
+
+The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+### [Unreleased]
+**Planned**
+- Setting + filter to customize the “Read More” link text.
+- Small cache layer for first-image DOM parsing.
+- CI + expanded PHPCS/WPCS coverage.
+
+---
+
+### [1.0.0] — 2025-09-03
+> Initial public release (clean redevelopment). Legacy behavior preserved by default.
+
+**Added**
+- Boilerplate structure (`includes/`, `admin/`, `public/`), loader, i18n, activation/deactivation.
+- Settings page (Settings → Excerpt Thumbnail) with sanitization and caps checks.
+- Optional Open Graph `og:image` output on single posts.
+- **Modern Mode:** excerpt-only output + `excerpt-thumbnail` image size.
+- Uninstall safety: removes options only if opted in.
+
+**Changed**
+- Safer image handling via core APIs; sanitize-on-save, escape-on-output; unified naming (`excerpt_thumbnail_*`).
+
+**Fixed**
+- Feed alignment behavior maintained for better reader compatibility.
+- Category exclusion logic clarified for category archives.
+
+---
+
+## License
+
+GPLv2 or later. See `LICENSE`.
+
