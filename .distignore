@@ -1,0 +1,46 @@
+# VCS / CI
+.git
+.github
+.gitattributes
+.gitignore
+.editorconfig
+.idea
+.vscode
+
+# Node / Composer / tooling
+node_modules
+vendor/bin
+vendor/composer/installed.json
+composer.lock
+composer.phar
+package.json
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+webpack.*
+gulpfile.*
+Gruntfile.*
+rollup.config.*
+.eslintrc*
+.stylelintrc*
+.prettier*
+
+# Tests / scripts / local files
+tests
+bin
+scripts
+phpunit.*
+phpcs.xml*
+psalm.*
+*.map
+*.log
+.DS_Store
+
+# Project extras you don’t want in the release
+*.md
+*.yml
+*.yaml
+
+# Keep translations source
+# (Do NOT ignore your POT)
+# languages/excerpt-thumbnail.pot
