@@ -91,7 +91,7 @@ class Excerpt_Thumbnail_Public {
 
 		global $post;
 		if ( ! $post instanceof WP_Post ) {
-		 return $excerpt;
+			return $excerpt;
 		}
 
 		// On site (non-feed), respect context toggles.
@@ -256,7 +256,7 @@ class Excerpt_Thumbnail_Public {
 
 		$classes = 'align' . $align . ' wp-post-image excerpt-thumbnail tfe';
 
-		// 1) Featured image
+		// 1) Featured image.
 		if ( function_exists( 'has_post_thumbnail' ) && has_post_thumbnail( $post_id ) ) {
 			$size = $modern_mode ? 'excerpt-thumbnail' : [ $width ?: 100, $height ?: 100 ];
 
@@ -267,22 +267,25 @@ class Excerpt_Thumbnail_Public {
 			);
 
 			if ( $img ) {
-				$label = sprintf( /* translators: %s: post title */ __( 'View: %s', 'excerpt-thumbnail' ), get_the_title( $post_id ) );
+				/* translators: %s: post title */
+				$label = sprintf( __( 'View: %s', 'excerpt-thumbnail' ), get_the_title( $post_id ) );
 				return $with_link ? $this->wrap_link( get_permalink( $post_id ), $img, $label ) : $img;
 			}
 		}
 
-		// 2) First content image
+		// 2) First content image.
 		$content = (string) get_post_field( 'post_content', $post_id );
 		$img     = $this->first_image_from_content( $content, $width, $height, $classes, get_the_title( $post_id ) );
 		if ( $img ) {
+			/* translators: %s: post title */
 			$label = sprintf( __( 'View: %s', 'excerpt-thumbnail' ), get_the_title( $post_id ) );
 			return $with_link ? $this->wrap_link( get_permalink( $post_id ), $img, $label ) : $img;
 		}
 
-		// 3) Default image
+		// 3) Default image.
 		if ( $use_default && $default_src ) {
-			$img   = $this->img_tag( $default_src, $width, $height, $classes, get_the_title( $post_id ), '' );
+			$img = $this->img_tag( $default_src, $width, $height, $classes, get_the_title( $post_id ), '' );
+			/* translators: %s: post title */
 			$label = sprintf( __( 'View: %s', 'excerpt-thumbnail' ), get_the_title( $post_id ) );
 			return $with_link ? $this->wrap_link( get_permalink( $post_id ), $img, $label ) : $img;
 		}
@@ -425,7 +428,7 @@ class Excerpt_Thumbnail_Public {
 				return preg_replace( '/<img /i', '<img align="left" hspace="5" ', $image_html, 1 );
 			}
 			if ( false !== strpos( $classes, 'alignright' ) ) {
-			 return preg_replace( '/<img /i', '<img align="right" hspace="5" ', $image_html, 1 );
+				return preg_replace( '/<img /i', '<img align="right" hspace="5" ', $image_html, 1 );
 			}
 		}
 		return $image_html;
